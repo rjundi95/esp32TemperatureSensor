@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESP32 Temperature Graph</title>
+    <link rel="stylesheet" href="style.css">
+    
+</head>
+<body>
+    <h1>ESP32 Temperature Monitor</h1>
+    
+    <!-- Date Picker for selecting a date -->
+    <label for="date-picker">Select a Date:</label>
+    <input type="date" id="date-picker">
+    <button onclick="fetchDataByDate()">Load Data</button>
+    
+    <!-- Temperature Graph -->
+    <div class="chart-container">
+        <canvas id="sensorChart"></canvas>
+    </div>
+    <!-- Scripts at the end to ensure they load properly -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <script defer src="./script.js"></script>
+    
+</body>
+</html>
