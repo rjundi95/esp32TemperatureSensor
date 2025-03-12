@@ -5,24 +5,21 @@ Thread 1
     -Grava esses dados no arquivo csv
 
 '''
-import machine
-import random #pode retirar depois que comecar a usar o sensor propriamente
+from machine import Pin, SoftI2C
+import BME280
 import os
 import time
-import dht 		#sensor
 
-# Initialize DHT sensor (connected to GPIO4)
-#sensor = dht.DHT22(machine.Pin(4))
+def get_sensor_data():
+    i2c = SoftI2C(scl=Pin(22), sda=Pin(21), freq=100000)
+    bme = BME280.BME280(i2c=i2c)
+    temp = bme.temperature[:4]
+    hum = bme.humidity[:4]
+     
+    return [temp, hum]
 
-# A function to simulate data from this pin
-# retorna a temperatura em °C
-def get_sensor_data():  #function to simulate sensor data
-    temp = random.randint(20, 40)
-    #print(temp)
-    return temp
-
-# Retorna os dados de tempo no formato AAA-MM-DD HH:mm:ss
-# Adjust this according to your timezone (e.g., -4 for GMT-4)
+# Retorna os dados de tempo no formato yyyy-mm-dd HH:mm:ss
+# Adjust this according to your timezone (for GMT-4)
 GMT_OFFSET = -4 * 3600  # Convert hours to seconds
 def get_formatted_time():
     utc_time = time.time()  # Get current UTC timestamp
@@ -33,7 +30,6 @@ def get_formatted_time():
     )
 
 # Function to write data to a CSV file
-def log_csv_data(temperature, timestamp):
+def log_csv_data(temperature, humidity,  timestamp):
     with open("data.csv", "a") as file:
-        file.write(f"{timestamp},{temperature}\n")
-
+        file.write(f"{timestamp},{temperature},{humidity}\n")
