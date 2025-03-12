@@ -15,24 +15,37 @@ station = network.WLAN(network.STA_IF)
 print(station.ifconfig()[0])
 
 # Sync time with NTP
+
+attempts = 0
+while attempts < 5:
+    try:
+        ntptime.settime()  # Sync ESP32 clock
+        print("Time synchronized:", time.localtime())
+        break
+    except Exception as e:
+        attempts += 1
+        print(f"Attempt {attempts} failed. Error {e}")
+        time.sleep(2)
+'''
 try:
     ntptime.settime()  # Sync ESP32 clock
     print("Time synchronized:", time.localtime())
 except:
     print("Failed to sync time")
-
+'''
 '''Funcao para o Thread 1 - responsavel por pegar dados dos sensores, manipular e gravar como csv'''
 def thread_sensor_data():
     while True:
         try:
-            temp = t1.get_sensor_data()
+            temp = t1.get_sensor_data()[0]
+            hum = t1.get_sensor_data()[1]
             timestamp = t1.get_formatted_time()  #get current timestamp
-            t1.log_csv_data(temp, timestamp)
-            print(f"Logged: {timestamp}, {temp}°C")
+            t1.log_csv_data(temp, hum, timestamp)
+            print(f"Logged: {timestamp}, {temp}°C, {hum}%\n")
             
         except Exception as e:
             print("Sensor error: ", e)
-        time.sleep(15)  # Wait 15 seconds before next reading
+        time.sleep(600)  # Wait 600s (10min) before next reading
 
 '''Funcao para o Thread 2 - responsavel por gerar o servidor e mandar os dados do csv para a web'''
 def thread_web_server():
