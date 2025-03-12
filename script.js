@@ -1,15 +1,25 @@
 const ctx = document.getElementById("sensorChart").getContext("2d");
-const initialDate = '2025-03-01';
+const initialDate = '2025-03-12';
 let sensorChart = new Chart(ctx, {
     type: "line",
     data: {
         labels: [],
-        datasets: [{
-            label: "Temperature (°C)",
-            borderColor: "red",
-            backgroundColor: "rgba(255, 0, 0, 0.2)",
-            data: []
-        }]
+        datasets: [
+            {
+                label: "Temperature (°C)",
+                borderColor: "red",
+                backgroundColor: "rgba(255, 0, 0, 0.2)",
+                data: [],
+                yAxisID: "y-temp"
+            },
+            {
+                label: "Humidity (%)",
+                borderColor: "blue",
+                backgroundColor: "rgba(0, 0, 255, 0.2)",
+                data: [],
+                yAxisID: "y-hum"    
+            }
+        ]
     },
     options: {
         responsive: true,
@@ -28,20 +38,45 @@ let sensorChart = new Chart(ctx, {
                         day: "yyyy-MM-dd"
                     }
                 },
-                min: new Date(initialDate).setHours(0, 0, 0, 0),
-                max: new Date(initialDate).setHours(23, 59, 59, 999),
+                min: new Date(`${initialDate}T12:00:00`).setHours(0, 0, 0, 0),
+                max: new Date(`${initialDate}T12:00:00`).setHours(23, 59, 59, 999),
+                //min: new Date(initialDate).setHours(0, 0, 0, 0),
+                //max: new Date(initialDate).setHours(23, 59, 59, 999),
                 title: {
                     display: true,
                     text: "Time"
                 }
             },
-            y: {
+            "y-temp": {
                 title: {
                     display: true,
                     text: "Temperature (°C)"
                 },
-                suggestedMin: 15,
-                suggestedMax: 40
+                ticks: {
+                    stepSize: 1, // Adjust this value to increase or decrease grid line frequency
+                    //count: 20,
+                    maxTicksLimit: 6
+                },
+                min: 20,
+                max: 40,
+                id: "y-temp",
+                position: "left",
+                grid: {
+                    drawOnChartArea: false  
+                }
+            },
+            "y-hum": {
+                title: {
+                    display: true,
+                    text: "Humidity (%)"
+                },
+                min: 20,
+                max: 100,
+                id: "y-humidity",
+                position: "right",
+                grid: {
+                    drawOnChartArea: false
+                }
             }
         }
     }
@@ -67,13 +102,14 @@ function fetchDataByDate() {
             console.log("CSV Data Received:", csvText); // Debugging output
 
             let lines = csvText.trim().split("\n");
-            let labels = [], temperatures = [];
+            let labels = [], temperatures = [], humidities = [];
 
             lines.forEach(line => {
                 let parts = line.split(",");
-                if (parts.length === 2) {
+                if (parts.length === 3) {
                     let timestamp = parts[0].trim();
                     let temperature = parseFloat(parts[1].trim());
+                    let humidity = parseFloat(parts[2].trim());
                     
                     // Convert timestamp to Date object
                     let dateObj = new Date(timestamp);
@@ -82,18 +118,24 @@ function fetchDataByDate() {
 
                     labels.push(dateObj);
                     temperatures.push(temperature);  // Store temperature
+                    humidities.push(humidity);
                 }
             });
             
+            // Debugging: Check if data is being parsed correctly
+            console.log("Parsed Labels:", labels);
+            console.log("Parsed Temperatures:", temperatures);
+            console.log("Parsed Humidities:", humidities);
+            
             // Clear existing data
             sensorChart.data.labels = [];
-            sensorChart.data.datasets.forEach(dataset => {
-                dataset.data = [];
-            });
+            sensorChart.data.datasets[0].data = [];
+            sensorChart.data.datasets[1].data = [];
             
             // Update graph with new data
             sensorChart.data.labels = labels;
             sensorChart.data.datasets[0].data = temperatures;
+            sensorChart.data.datasets[1].data = humidities;
             sensorChart.update();
         })
         .catch(error => console.error("Error fetching data:", error));
@@ -114,5 +156,5 @@ document.addEventListener("DOMContentLoaded", () => {
 window.fetchDataByDate = fetchDataByDate;
 
 // Refresh graph every 16 seconds
-setInterval(updateGraph, 16000);
-updateGraph();  // Initial call to populate the graph
+//setInterval(updateGraph, 16000);
+//updateGraph();  // Initial call to populate the graph
