@@ -6,6 +6,7 @@ Thread 2
 
 '''
 import network
+import globals 
 
 def handle_client(client_socket):
     """Handles incoming client requests."""
@@ -36,15 +37,16 @@ def handle_client(client_socket):
                 response = "HTTP/1.1 200 OK\nContent-Type: text/plain\n\n" + csv_data
             except Exception as e:
                 response = "HTTP/1.1 500 Internal Server Error\n\nError reading CSV file"
-
+                globals.led_error_internet()
         client_socket.send(response.encode())  # send response
         
     except OSError as e:
         if e.errno == errno.ECONNRESET:
             print("Connection reset by peer (client disconnected abruptly)")
+            globals.led_error_internet()
         else:
             print(f"Unexpected error: {e}")
-
+            globals.led_error_internet()
     finally:
         client_socket.close()  # Ensure the socket is closed properly    
     
@@ -58,6 +60,7 @@ def load_file(filename):
             return arquivo  # Read and return file content
     except:
         return None  # Return None if the file is missing or an error occurs
+        globals.led_error_internet()
 
 # Carrega o arquivo html
 def load_html():
@@ -67,6 +70,5 @@ def load_html():
             return file.read()
     except Exception as e:
         print("Error loading HTML:", e)
+        globals.led_error_internet()
         return "<h1>Error loading page</h1>"
-
-
