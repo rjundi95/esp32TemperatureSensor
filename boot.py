@@ -1,7 +1,7 @@
 import connect2wifi as wifi
 import thread_1 as t1
 import thread_2 as t2
-
+from machine import Pin
 import time
 import ntptime
 import _thread
@@ -66,6 +66,26 @@ def thread_web_server():
 # Start threads
 _thread.start_new_thread(thread_sensor_data, ())
 _thread.start_new_thread(thread_web_server, ())
+
+#Erase all the data from csv file by pressing "boot" button
+def reset_csv(pin):
+    time.sleep_ms(200)  # Debounce delay
+    if pin.value() == 0:
+        try:
+            with open("data.csv", "w") as f:
+                f.write("")  # Clear the file
+            print("data.csv has been reset.")
+            #lights on the blue led for 3s straight
+            led_blue.value(1)
+            time.sleep(3)
+            led_blue.value(0)
+        except Exception as e:
+            print("Error resetting file:", e)
+
+# Set up GPIO0 (BOOT) as input with pull-up
+led_blue = Pin(2, Pin.OUT)
+button = Pin(0, Pin.IN, Pin.PULL_UP)
+button.irq(trigger=Pin.IRQ_FALLING, handler=reset_csv)
 
 # Keep the main thread alive
 while True:
